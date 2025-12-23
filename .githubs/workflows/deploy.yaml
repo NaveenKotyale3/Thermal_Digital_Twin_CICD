@@ -41,6 +41,6 @@ jobs:
           pip3 install -r requirements.txt
 
           echo "🚀 Restarting FastAPI app using PM2"
-          pm2 restart fastapi-app || pm2 start app.py --name fastapi-app --interpreter python3
+          pm2 restart fastapi-app || pm2 start main.py --name fastapi-app --interpreter python3
 
           echo "✅ Deployment completed successfully"
