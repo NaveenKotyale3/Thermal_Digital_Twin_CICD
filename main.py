@@ -17,7 +17,6 @@ import numpy as np
 from sklearn.preprocessing import StandardScaler
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.interval import IntervalTrigger
-import boto3 
 from botocore.exceptions import ClientError
 import uuid
 import math
@@ -309,6 +308,10 @@ async def receive_sensor_data(data: SensorData):
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error processing sensor data: {str(e)}")
+    
+@app.get("/versions")
+def get_versions():
+    return {"versions":"v2"}
 
 @app.get("/current-window/{vehicle_id}")
 async def get_current_window(vehicle_id: str):
