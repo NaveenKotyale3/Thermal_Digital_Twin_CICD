@@ -22,6 +22,7 @@ jobs:
           set -e
 
           APP_DIR=/home/ubuntu/Thermal_Digital_Twin_CICD
+          VENV_DIR=$APP_DIR/venv
 
           echo "📂 Moving to app directory"
           cd $APP_DIR
@@ -35,12 +36,22 @@ jobs:
           ZELIOT_TOKEN=${{ secrets.ZELIOT_TOKEN }}
           TRAKMATE_API=${{ secrets.TRAKMATE_API }}
           TRAKMATE_APIKEY=${{ secrets.TRAKMATE_APIKEY }}
+          AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
           EOF
 
-          echo "📦 Installing Python dependencies"
-          pip3 install -r requirements.txt
+          echo "🐍 Creating virtual environment (if not exists)"
+          if [ ! -d "$VENV_DIR" ]; then
+            python3 -m venv venv
+          fi
 
-          echo "🚀 Restarting FastAPI app using PM2"
-          pm2 restart fastapi-app || pm2 start main.py --name fastapi-app --interpreter python3
+          echo "📦 Installing dependencies inside venv"
+          source venv/bin/activate
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+          echo "🚀 Restarting FastAPI app using PM2 + venv"
+          pm2 restart fastapi-app || \
+          pm2 start venv/bin/uvicorn --name fastapi-app -- main:app --host 0.0.0.0 --port 8000
 
           echo "✅ Deployment completed successfully"
