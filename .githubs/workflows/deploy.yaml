@@ -1,0 +1,46 @@
+name: Thermal Digital Twin
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Deploy to EC2 via SSH
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USER }}
+        key: ${{ secrets.EC2_KEY }}
+        script: |
+          set -e
+
+          APP_DIR=/home/ubuntu/fastapi-pm2-cicd
+
+          echo "📂 Moving to app directory"
+          cd $APP_DIR
+
+          echo "⬇️ Pull latest code"
+          git pull origin main
+
+          echo "🧪 Creating .env file from GitHub Secrets"
+          cat <<EOF > .env
+          ZELIOT_BASE_URL=${{ secrets.ZELIOT_BASE_URL }}
+          ZELIOT_TOKEN=${{ secrets.ZELIOT_TOKEN }}
+          TRAKMATE_API=${{ secrets.TRAKMATE_API }}
+          TRAKMATE_APIKEY=${{ secrets.TRAKMATE_APIKEY }}
+          EOF
+
+          echo "📦 Installing Python dependencies"
+          pip3 install -r requirements.txt
+
+          echo "🚀 Restarting FastAPI app using PM2"
+          pm2 restart fastapi-app || pm2 start app.py --name fastapi-app --interpreter python3
+
+          echo "✅ Deployment completed successfully"
