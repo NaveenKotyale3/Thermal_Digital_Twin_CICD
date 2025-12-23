@@ -21,7 +21,7 @@ jobs:
         script: |
           set -e
 
-          APP_DIR=/home/ubuntu/fastapi-pm2-cicd
+          APP_DIR=/home/ubuntu/Thermal_Digital_Twin_CICD
 
           echo "📂 Moving to app directory"
           cd $APP_DIR
